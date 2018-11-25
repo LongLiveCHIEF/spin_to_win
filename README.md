@@ -11,3 +11,22 @@ The project consists of:
 - 2 1k potentiometers
 - AC to DC regulated power supply (5v up to 30A)
 - microcontroller (teensy 3.6 or Arduino Due)
+
+### Pin Information
+
+In a 8 strip matrix, with strips having pixel 1 on the far right, and the first strip being at the top.
+
+To verify the strip order, run the `src/id_strips.cpp` sketch.
+
+```
+# teensy 3.6 pins (Using Teensy Port Manipulation, PORT D)
+
+Pin 2  - strip 1
+Pin 14 - strip 2
+Pin 7  - strip 3
+Pin 8  - strip 4
+Pin 6  - strip 5
+Pin 20 - strip 6
+Pin 21 - strip 7
+Pin 5  - strip 8
+```
