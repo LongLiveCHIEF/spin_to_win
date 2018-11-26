@@ -25,8 +25,13 @@ void setup(){
   Serial.println("----Starting Spin to Win-----");
 }
 
+int selectorRangeStart = 0;
+int selectorRangeEnd = (NUM_LEDS_PER_STRIP*NUM_SELECTOR_STRIPS)-1;
+int wheelRangeStart = (NUM_LEDS_PER_STRIP*NUM_SELECTOR_STRIPS);
+int wheelRangeEnd = (NUM_STRIPS*NUM_LEDS_PER_STRIP);
+
 void loop() {
-  leds(0,(NUM_LEDS_PER_STRIP*NUM_SELECTOR_STRIPS)-1).fill_solid(CRGB::Blue);
-  leds(20, 160).fill_solid(CRGB::Red);
+  leds(selectorRangeStart,selectorRangeEnd).fill_solid(CRGB::Blue);
+  leds(wheelRangeStart, wheelRangeEnd).fill_solid(CRGB::Red);
   LEDS.show();
 }
