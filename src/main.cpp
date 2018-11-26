@@ -5,8 +5,9 @@
 #define NUM_WHEEL_STRIPS 6
 #define NUM_STRIPS 8
 #define LED_TYPE WS2812
+#define SELECTOR_WIDTH 3
+#define SPACE_WIDTH 8
 
-int spaceWidth = 8;
 int startButton = 24;
 int stopButton = 25;
 int startbuttonState = HIGH;
