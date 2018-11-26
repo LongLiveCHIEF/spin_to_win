@@ -10,8 +10,8 @@
 #define SPACE_WIDTH 8
 #define START_BUTTON 22
 #define STOP_BUTTON 23
-#define SELECTOR_COLOR CRGB::Yellow
-#define BRIGHTNESS 66
+#define SELECTOR_COLOR CRGB::Gold
+#define BRIGHTNESS 160
 
 int spinning = HIGH;
 int startButtonState = HIGH;
@@ -29,7 +29,7 @@ int bottomSelectorStripEnd = (NUM_STRIPS*NUM_LEDS_PER_STRIP);
 CRGBArray<NUM_STRIPS * NUM_LEDS_PER_STRIP> leds;
 
 void moveSelector(){
-  if (selectorEnd == (NUM_LEDS_PER_STRIP-SELECTOR_WIDTH) && selectorForward){
+  if (selectorEnd == (NUM_LEDS_PER_STRIP-1) && selectorForward){
     selectorForward = false;
   }
 
