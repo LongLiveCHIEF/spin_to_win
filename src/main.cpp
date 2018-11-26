@@ -20,9 +20,13 @@ CRGBArray<NUM_STRIPS * NUM_LEDS_PER_STRIP> leds;
 
 void setup(){
   Serial.begin(9600);
-  FastLED.addLeds<WS2811_PORTD, NUM_STRIPS>(leds, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
-  FastLED.clearData();
+  LEDS.addLeds<WS2811_PORTD, NUM_STRIPS>(leds, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
+  LEDS.clearData();
   Serial.println("----Starting Spin to Win-----");
 }
 
-void loop() { static uint8_t hue=0; leds.fill_rainbow(hue++); FastLED.delay(30); }
+void loop() {
+  leds(0,(NUM_LEDS_PER_STRIP*NUM_SELECTOR_STRIPS)-1).fill_solid(CRGB::Blue);
+  leds(20, 160).fill_solid(CRGB::Red);
+  LEDS.show();
+}
