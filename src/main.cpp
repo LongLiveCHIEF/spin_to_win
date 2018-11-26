@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "FastLED.h"
+
 #define NUM_LEDS_PER_STRIP 20
 #define NUM_SELECTOR_STRIPS 2
 #define NUM_WHEEL_STRIPS 6
@@ -7,72 +8,75 @@
 #define LED_TYPE WS2812
 #define SELECTOR_WIDTH 3
 #define SPACE_WIDTH 8
+#define START_BUTTON 22
+#define STOP_BUTTON 23
+#define SELECTOR_COLOR CRGB::Yellow
+#define BRIGHTNESS 66
 
-bool spinning = false;
-int startButton = 7;
-int stopButton = 6;
+int spinning = HIGH;
 int startButtonState = HIGH;
 int startButtonReading;
 int startButtonPrevious = LOW;
 long lastStartButtonPushTime = 0;
+int selectorBegin = 0;
+int selectorEnd = SELECTOR_WIDTH-1;
+bool selectorForward = true;
 
-long debounce = 200;
+long debounce = 100;
+int bottomSelectorStripBegin = (NUM_STRIPS*NUM_LEDS_PER_STRIP)-NUM_LEDS_PER_STRIP;
+int bottomSelectorStripEnd = (NUM_STRIPS*NUM_LEDS_PER_STRIP);
+
 CRGBArray<NUM_STRIPS * NUM_LEDS_PER_STRIP> leds;
 
-void selector(){
-  while(startButtonState == HIGH){
-    for(int i = 0; i < (NUM_LEDS_PER_STRIP-SELECTOR_WIDTH); i++) {
-      leds(i,i+SELECTOR_WIDTH-1).fill_solid(CRGB::Blue);
-      leds(i+1,i+SELECTOR_WIDTH-1+1).fill_solid(CRGB::Blue);
-      FastLED.show();
-      FastLED.delay(10);
-      leds(i,i+SELECTOR_WIDTH-1).fill_solid(CRGB::Black);
-      leds(i+1,i+SELECTOR_WIDTH-1+1).fill_solid(CRGB::Black);
-      FastLED.show();
-      FastLED.delay(10);
-    }
+void moveSelector(){
+  if (selectorEnd == (NUM_LEDS_PER_STRIP-SELECTOR_WIDTH) && selectorForward){
+    selectorForward = false;
+  }
 
-    for(int i =(NUM_LEDS_PER_STRIP-SELECTOR_WIDTH-1); i >= SELECTOR_WIDTH; i--){
-      leds(i,i+SELECTOR_WIDTH-1).fill_solid(CRGB::Blue);
-      leds(i-1,i+SELECTOR_WIDTH-1-1).fill_solid(CRGB::Blue);
-      FastLED.show();
-      FastLED.delay(10);
-      leds(i,i+SELECTOR_WIDTH-1).fill_solid(CRGB::Black);
-      leds(i-1,i+SELECTOR_WIDTH-1-1).fill_solid(CRGB::Black);
-      FastLED.show();
-      FastLED.delay(10);
-    }
+  if (selectorBegin == 0 && !selectorForward){
+    selectorForward = true;
+  }
+
+  if(selectorForward){
+    leds[selectorBegin] = CRGB::Black;
+    leds[selectorEnd+1] = SELECTOR_COLOR;
+    leds(bottomSelectorStripBegin, bottomSelectorStripEnd) = leds(0, (NUM_LEDS_PER_STRIP-1));
+    selectorBegin++;
+    selectorEnd++;
+    FastLED.show();
+  } else {
+    leds[selectorEnd] = CRGB::Black;
+    leds[selectorBegin-1] = SELECTOR_COLOR;
+    leds(bottomSelectorStripBegin, bottomSelectorStripEnd) = leds(0, (NUM_LEDS_PER_STRIP-1));
+    selectorBegin--;
+    selectorEnd--;
+    FastLED.show();
   }
 }
-
 
 void setup(){
-  Serial.begin(115200);
-  pinMode(startButton, INPUT);
-  FastLED.addLeds<WS2811_PORTD, NUM_STRIPS>(leds, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
+  Serial.begin(9600);
   Serial.println("Begin Serial Output");
+
+  pinMode(START_BUTTON, INPUT);
+
+  FastLED.addLeds<WS2811_PORTD, NUM_STRIPS>(leds, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
+
+  leds(selectorBegin, selectorEnd).fill_solid(SELECTOR_COLOR);
+
+  FastLED.setBrightness(BRIGHTNESS);
 }
 
-int selectorRangeStart = 0;
-int selectorRangeEnd = selectorRangeStart + SELECTOR_WIDTH -1;
-int wheelRangeStart = (NUM_LEDS_PER_STRIP*NUM_SELECTOR_STRIPS);
-int wheelRangeEnd = (NUM_STRIPS*NUM_LEDS_PER_STRIP);
-int bottomSelectorOffset = NUM_STRIPS-1;
-
 void loop() {
-  startButtonReading = digitalRead(startButton);
+  startButtonReading = digitalRead(START_BUTTON);
   if (startButtonReading == HIGH && startButtonPrevious == LOW && millis() - lastStartButtonPushTime > debounce){
     Serial.println("Start Button Pushed");
-    if (startButtonState == HIGH) {
-      startButtonState = LOW;
-      spinning = false;
-    } else {
-      startButtonState = HIGH;
-      spinning = true;
-    }
-
     lastStartButtonPushTime = millis();
+    moveSelector();
+  } else {
+    moveSelector();
   }
   startButtonPrevious = startButtonReading;
-  selector();
+
+  delay(50);
 }
