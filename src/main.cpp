@@ -13,20 +13,23 @@
 #define SELECTOR_COLOR CRGB::Green
 #define BRIGHTNESS 160
 
+// matrix control indeces
 const int selectorControlBegin = 0;
 const int selectorControlEnd = (NUM_LEDS_PER_STRIP-1);
 const int wheelControlBegin = NUM_LEDS_PER_STRIP;
 const int wheelControlEnd = ((NUM_LEDS_PER_STRIP*2)-1);
-int spinning = HIGH;
-int startButtonState = HIGH;
+
+// wheel controls
+bool spinning = false;
 int startButtonReading;
-int startButtonPrevious = LOW;
 long lastStartButtonPushTime = 0;
+int stopButtonReading;
+long lastStopButtonPushTime = 0;
 int selectorBegin = 0;
 int selectorEnd = SELECTOR_WIDTH;
 bool selectorForward = true;
-
 long debounce = 100;
+
 int bottomSelectorStripBegin = (NUM_STRIPS*NUM_LEDS_PER_STRIP)-NUM_LEDS_PER_STRIP;
 int bottomSelectorStripEnd = ((NUM_STRIPS*NUM_LEDS_PER_STRIP)-1);
 
@@ -66,6 +69,8 @@ CRGB randomWheelColor(){
       return CRGB::Orange;
     case 2:
       return CRGB::Blue;
+    default:
+      return CRGB::Red;
   }
 }
 
@@ -105,6 +110,7 @@ void setup(){
   randomSeed(analogRead(0));
 
   pinMode(START_BUTTON, INPUT);
+  pinMode(STOP_BUTTON, INPUT);
 
   FastLED.addLeds<WS2811_PORTD, NUM_STRIPS>(leds, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
 
@@ -114,17 +120,25 @@ void setup(){
 }
 
 void loop() {
-  startButtonReading = digitalRead(START_BUTTON);
-  if (startButtonReading == HIGH && startButtonPrevious == LOW && millis() - lastStartButtonPushTime > debounce){
-    Serial.println("Start Button Pushed");
-    lastStartButtonPushTime = millis();
-    moveSelector();
-    moveWheel();
+  if(!spinning){
+    startButtonReading = digitalRead(START_BUTTON);
+    if (startButtonReading == HIGH && millis() - lastStartButtonPushTime > debounce){
+      Serial.println("Start Button Pushed");
+      lastStartButtonPushTime = millis();
+      spinning = true;
+      moveSelector();
+      moveWheel();
+    }
   } else {
-    moveSelector();
-    moveWheel();
+    stopButtonReading = digitalRead(STOP_BUTTON);
+    if (stopButtonReading == HIGH && millis() - lastStopButtonPushTime > debounce){
+      Serial.println("Stop Button Pushed");
+      lastStopButtonPushTime = millis();
+      spinning = false;
+    } else {
+      moveSelector();
+      moveWheel();
+    }
+    FastLED.delay(15);
   }
-  startButtonPrevious = startButtonReading;
-
-  delay(50);
 }
