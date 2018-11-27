@@ -13,18 +13,22 @@
 #define SELECTOR_COLOR CRGB::Green
 #define BRIGHTNESS 160
 
+const int selectorControlBegin = 0;
+const int selectorControlEnd = (NUM_LEDS_PER_STRIP-1);
+const int wheelControlBegin = NUM_LEDS_PER_STRIP;
+const int wheelControlEnd = ((NUM_LEDS_PER_STRIP*2)-1);
 int spinning = HIGH;
 int startButtonState = HIGH;
 int startButtonReading;
 int startButtonPrevious = LOW;
 long lastStartButtonPushTime = 0;
 int selectorBegin = 0;
-int selectorEnd = SELECTOR_WIDTH-1;
+int selectorEnd = SELECTOR_WIDTH;
 bool selectorForward = true;
 
 long debounce = 100;
 int bottomSelectorStripBegin = (NUM_STRIPS*NUM_LEDS_PER_STRIP)-NUM_LEDS_PER_STRIP;
-int bottomSelectorStripEnd = (NUM_STRIPS*NUM_LEDS_PER_STRIP);
+int bottomSelectorStripEnd = ((NUM_STRIPS*NUM_LEDS_PER_STRIP)-1);
 
 CRGBArray<NUM_STRIPS * NUM_LEDS_PER_STRIP> leds;
 
@@ -33,21 +37,21 @@ void moveSelector(){
     selectorForward = false;
   }
 
-  if (selectorBegin == 0 && !selectorForward){
+  if (selectorBegin == selectorControlBegin && !selectorForward){
     selectorForward = true;
   }
 
   if(selectorForward){
     leds[selectorBegin] = CRGB::Black;
     leds[selectorEnd+1] = SELECTOR_COLOR;
-    leds(bottomSelectorStripBegin, bottomSelectorStripEnd) = leds(0, (NUM_LEDS_PER_STRIP-1));
+    leds(bottomSelectorStripBegin, bottomSelectorStripEnd) = leds(selectorControlBegin, selectorControlEnd);
     selectorBegin++;
     selectorEnd++;
     FastLED.show();
   } else {
     leds[selectorEnd] = CRGB::Black;
     leds[selectorBegin-1] = SELECTOR_COLOR;
-    leds(bottomSelectorStripBegin, bottomSelectorStripEnd) = leds(0, (NUM_LEDS_PER_STRIP-1));
+    leds(bottomSelectorStripBegin, bottomSelectorStripEnd) = leds(selectorControlBegin, selectorControlEnd);
     selectorBegin--;
     selectorEnd--;
     FastLED.show();
@@ -65,15 +69,14 @@ CRGB randomWheelColor(){
   }
 }
 
-CRGB currentColor = CRGB::Red;
 int currentSpaceLength = 0;
-int stripOffset = NUM_LEDS_PER_STRIP;
+CRGB currentColor = randomWheelColor();
 // for each LED in 2nd row, get current color and move that color one spot to the left
 // spot 0 introduces new colors and gets a random color from the selectable palette whenever
 // currentSpaceLength == SPACE_WIDTH (if not yet full, it increments currentSpaceLength as it colors it)
 void moveWheel(){
-  for(int i = stripOffset+NUM_LEDS_PER_STRIP; i >= stripOffset; i--){
-    if(i == stripOffset){
+  for(int i = wheelControlEnd; i >= wheelControlBegin; i--){
+    if(i == wheelControlBegin){
       if(currentSpaceLength == SPACE_WIDTH) {
         currentColor = randomWheelColor();
         leds[i] = currentColor;
@@ -89,7 +92,7 @@ void moveWheel(){
 
   // loop through the remaining wheel strips and mirror the wheel control strips display
   for(int i = 3; i < NUM_STRIPS; i++){
-    leds(((i*NUM_LEDS_PER_STRIP)-NUM_LEDS_PER_STRIP+1),(i*NUM_LEDS_PER_STRIP)) = leds(stripOffset, (stripOffset+NUM_LEDS_PER_STRIP));
+    leds(((i*NUM_LEDS_PER_STRIP)-NUM_LEDS_PER_STRIP),((i*NUM_LEDS_PER_STRIP))-1) = leds(wheelControlBegin, wheelControlEnd);
   }
 }
 
@@ -105,9 +108,9 @@ void setup(){
 
   FastLED.addLeds<WS2811_PORTD, NUM_STRIPS>(leds, NUM_LEDS_PER_STRIP).setCorrection(TypicalLEDStrip);
 
-  leds(selectorBegin, selectorEnd).fill_solid(SELECTOR_COLOR);
-
+  FastLED.clear();
   FastLED.setBrightness(BRIGHTNESS);
+  FastLED.show();
 }
 
 void loop() {
