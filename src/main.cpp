@@ -10,7 +10,7 @@
 #define SPACE_WIDTH 8
 #define START_BUTTON 22
 #define STOP_BUTTON 23
-#define SELECTOR_COLOR CRGB::Gold
+#define SELECTOR_COLOR CRGB::Green
 #define BRIGHTNESS 160
 
 int spinning = HIGH;
@@ -65,9 +65,9 @@ CRGB randomWheelColor(){
   }
 }
 
-CRGB currentColor = CRGB::Black;
+CRGB currentColor = CRGB::Red;
 int currentSpaceLength = 0;
-int stripOffset = (NUM_LEDS_PER_STRIP-1);
+int stripOffset = NUM_LEDS_PER_STRIP;
 // for each LED in 2nd row, get current color and move that color one spot to the left
 // spot 0 introduces new colors and gets a random color from the selectable palette whenever
 // currentSpaceLength == SPACE_WIDTH (if not yet full, it increments currentSpaceLength as it colors it)
@@ -85,6 +85,11 @@ void moveWheel(){
     } else {
       leds[i] = leds[(i-1)];
     }
+  }
+
+  // loop through the remaining wheel strips and mirror the wheel control strips display
+  for(int i = 3; i < NUM_STRIPS; i++){
+    leds(((i*NUM_LEDS_PER_STRIP)-NUM_LEDS_PER_STRIP+1),(i*NUM_LEDS_PER_STRIP)) = leds(stripOffset, (stripOffset+NUM_LEDS_PER_STRIP));
   }
 }
 
@@ -111,8 +116,10 @@ void loop() {
     Serial.println("Start Button Pushed");
     lastStartButtonPushTime = millis();
     moveSelector();
+    moveWheel();
   } else {
     moveSelector();
+    moveWheel();
   }
   startButtonPrevious = startButtonReading;
 
