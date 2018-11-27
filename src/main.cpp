@@ -54,9 +54,47 @@ void moveSelector(){
   }
 }
 
+CRGB randomWheelColor(){
+  switch(random(3)){
+    case 0:
+      return CRGB::Red;
+    case 1:
+      return CRGB::Orange;
+    case 2:
+      return CRGB::Blue;
+  }
+}
+
+CRGB currentColor = CRGB::Black;
+int currentSpaceLength = 0;
+int stripOffset = (NUM_LEDS_PER_STRIP-1);
+// for each LED in 2nd row, get current color and move that color one spot to the left
+// spot 0 introduces new colors and gets a random color from the selectable palette whenever
+// currentSpaceLength == SPACE_WIDTH (if not yet full, it increments currentSpaceLength as it colors it)
+void moveWheel(){
+  for(int i = stripOffset+NUM_LEDS_PER_STRIP; i >= stripOffset; i--){
+    if(i == stripOffset){
+      if(currentSpaceLength == SPACE_WIDTH) {
+        currentColor = randomWheelColor();
+        leds[i] = currentColor;
+        currentSpaceLength = 1;
+      } else {
+        leds[i] = currentColor;
+        currentSpaceLength++;
+      }
+    } else {
+      leds[i] = leds[(i-1)];
+    }
+  }
+}
+
+
 void setup(){
   Serial.begin(9600);
   Serial.println("Begin Serial Output");
+
+  // setup random generator for color wheel
+  randomSeed(analogRead(0));
 
   pinMode(START_BUTTON, INPUT);
 
