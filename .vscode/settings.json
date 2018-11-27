@@ -1,6 +1,0 @@
-{
-    "terminal.integrated.env.linux": {
-        "PATH": "/home/chief/.platformio/penv/bin:/home/chief/.platformio/penv:/home/chief/tools/arduino-1.8.7-linux64/arduino-1.8.7:/home/chief/.local/bin:/usr/local/bin:/home/chief/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/chief/.rvm/bin:/home/chief/.rvm/bin",
-        "PLATFORMIO_CALLER": "vscode"
-    }
-}
